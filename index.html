@@ -3,174 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KAPTANCRAFT | APEX</title>
+    <title>KAPTANCRAFT | COMMAND CENTER</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Bento:wght@900&family=Outfit:wght@200;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;400;900&family=Syncopate:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --h-color: #f1c40f;
+            --m-color: #f1c40f;
             --l-color: #53fc18;
-            --base: #080808;
-            --glass: rgba(255, 255, 255, 0.02);
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
 
         body {
-            background: var(--base);
+            background: #000;
             color: #fff;
             font-family: 'Outfit', sans-serif;
             overflow: hidden;
             height: 100vh;
-            cursor: none;
         }
 
-        /* --- ADVANCED CURSOR --- */
-        #c-dot { position: fixed; width: 6px; height: 6px; background: #fff; border-radius: 50%; pointer-events: none; z-index: 10001; mix-blend-mode: difference; }
-        #c-ring { position: fixed; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; pointer-events: none; z-index: 10000; transition: transform 0.15s ease-out; }
+        /* --- SİNEMATİK GİRİŞ --- */
+        #entry-layer {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 1.5s cubic-bezier(1, 0, 0, 1);
+        }
 
-        /* --- KINETIC BACKGROUND --- */
-        #bg-layer { position: fixed; inset: 0; z-index: 0; filter: blur(80px); opacity: 0.4; }
-        .orb { position: absolute; border-radius: 50%; animation: drift 20s infinite linear; }
-        .orb-1 { width: 40vw; height: 40vw; background: var(--h-color); top: -10%; left: -10%; }
-        .orb-2 { width: 35vw; height: 35vw; background: var(--l-color); bottom: -10%; right: -10%; animation-delay: -5s; }
-        @keyframes drift { 0% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(5vw, 10vh) rotate(180deg); } 100% { transform: translate(0,0) rotate(360deg); } }
+        .scanline {
+            width: 1px;
+            height: 100%;
+            background: var(--m-color);
+            position: absolute;
+            left: 50%;
+            transform: scaleY(0);
+            animation: scan 1.2s forwards cubic-bezier(0.85, 0, 0.15, 1);
+        }
 
-        /* --- INTRO SEQUENCE --- */
-        #intro { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .intro-h { font-size: 1rem; letter-spacing: 20px; font-weight: 200; overflow: hidden; white-space: nowrap; border-right: 2px solid var(--h-color); animation: type 1.5s steps(10), blink 0.5s infinite step-end alternate; }
-        @keyframes type { from { width: 0 } to { width: 250px } }
-        @keyframes blink { 50% { border-color: transparent } }
+        @keyframes scan {
+            0% { transform: scaleY(0); opacity: 1; }
+            50% { transform: scaleY(1); opacity: 1; }
+            100% { transform: scaleY(1); opacity: 0; width: 100%; left: 0; }
+        }
 
-        /* --- INTERFACE --- */
-        main {
-            position: relative;
-            z-index: 10;
-            display: grid;
-            grid-template-columns: 1fr 450px;
+        .entry-title {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 15px;
+            opacity: 0;
+            animation: reveal 0.5s 1s forwards;
+        }
+
+        @keyframes reveal { to { opacity: 1; letter-spacing: 25px; } }
+
+        /* --- DASHBOARD --- */
+        #app {
             height: 100vh;
             padding: 40px;
-            gap: 40px;
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            grid-template-rows: 1fr auto;
+            gap: 20px;
             opacity: 0;
-            transition: opacity 1.5s ease;
+            transition: 2s;
         }
 
-        .hero-section { display: flex; flex-direction: column; justify-content: flex-end; }
-        .hero-h { font-size: clamp(4rem, 10vw, 12rem); line-height: 0.85; font-weight: 900; letter-spacing: -5px; margin-bottom: 20px; }
-        .hero-h span { color: var(--h-color); }
-
-        .control-panel {
-            background: var(--glass);
-            border-left: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(50px);
-            padding: 60px;
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 30px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            border-radius: 40px;
         }
 
-        .status-tag { display: flex; align-items: center; gap: 10px; font-size: 0.7rem; letter-spacing: 3px; margin-bottom: 30px; color: var(--l-color); }
-        .status-tag::before { content: ''; width: 8px; height: 8px; background: var(--l-color); border-radius: 50%; box-shadow: 0 0 10px var(--l-color); }
+        /* --- SOL PANEL (NAV) --- */
+        .brand { font-family: 'Syncopate', sans-serif; font-size: 1.2rem; margin-bottom: 40px; color: var(--m-color); }
+        .nav-item {
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            border: 1px solid transparent;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: rgba(255,255,255,0.6);
+            font-weight: 500;
+        }
+        .nav-item:hover { border-color: var(--border); background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background: var(--m-color); color: #000; }
 
-        .ip-card {
+        /* --- ORTA PANEL (HERO) --- */
+        .hero-panel {
+            grid-column: 2;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-h { font-size: 8rem; font-weight: 900; line-height: 0.8; letter-spacing: -5px; text-align: center; }
+        .hero-h span { display: block; font-size: 2.5rem; letter-spacing: 10px; font-family: 'Syncopate'; color: var(--m-color); }
+
+        /* --- SAĞ PANEL (STATS) --- */
+        .stat-card { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 15px; margin-bottom: 15px; }
+        .stat-val { font-size: 1.5rem; font-weight: 900; color: var(--l-color); display: block; }
+        .stat-label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; letter-spacing: 2px; }
+
+        /* --- ALT PANEL (ACTION) --- */
+        .bottom-bar {
+            grid-column: 1 / 4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ip-bar {
             background: #fff;
             color: #000;
-            padding: 30px;
-            border-radius: 24px;
-            margin-bottom: 50px;
-            cursor: pointer;
-            transition: 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            padding: 15px 40px;
+            border-radius: 100px;
+            font-weight: 900;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: 0.5s;
         }
+        .ip-bar:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(255,255,255,0.2); }
 
-        .ip-card:hover { transform: scale(1.05) rotate(2deg); box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+        /* --- CURSOR --- */
+        #c { position: fixed; width: 10px; height: 10px; background: #fff; border-radius: 50%; pointer-events: none; z-index: 20000; mix-blend-mode: difference; }
+        #c-r { position: fixed; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; pointer-events: none; z-index: 19999; transition: 0.1s ease-out; }
 
-        .btn-stack { display: flex; flex-direction: column; gap: 15px; }
-        .act-btn {
-            padding: 22px;
-            border-radius: 18px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: 0.4s;
-            text-align: center;
-        }
-
-        .k-btn { background: var(--l-color); color: #000; box-shadow: 0 10px 30px rgba(83, 252, 24, 0.2); }
-        .k-btn:hover { background: #fff; transform: translateY(-3px); }
-        .d-btn { border: 1px solid rgba(255,255,255,0.2); color: #fff; }
-        .d-btn:hover { background: rgba(255,255,255,1); color: #000; }
-
-        @media (max-width: 1000px) {
-            main { grid-template-columns: 1fr; padding: 20px; }
-            .control-panel { padding: 30px; }
-            .hero-h { font-size: 5rem; }
-        }
     </style>
 </head>
 <body>
 
-    <div id="c-dot"></div>
-    <div id="c-ring"></div>
+    <div id="c"></div>
+    <div id="c-r"></div>
 
-    <div id="intro"><div class="intro-h">KAPTANCRAFT.EXE</div></div>
-
-    <div id="bg-layer">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
+    <div id="entry-layer">
+        <div class="scanline"></div>
+        <div class="entry-title">KAPTANCRAFT</div>
     </div>
 
-    <main id="ui">
-        <section class="hero-section">
-            <h1 class="hero-h">KAPTAN<br><span>CRAFT</span></h1>
-            <p style="opacity: 0.4; max-width: 400px; line-height: 1.6;">1.21.4 Survival dünyasında sınırları zorla. KaptanCraft ile yeni nesil network deneyimine katıl.</p>
+    <div id="app">
+        <aside class="panel">
+            <div class="brand">KC SYSTEM</div>
+            <a href="#" class="nav-item active"><i class="fas fa-home"></i> ANA SAYFA</a>
+            <a href="https://kick.com/esentokat60" target="_blank" class="nav-item"><i class="fa-brands fa-kickstarter"></i> KICK CANLI</a>
+            <a href="#" class="nav-item"><i class="fab fa-discord"></i> DISCORD</a>
+            <a href="#" class="nav-item"><i class="fas fa-shopping-cart"></i> MARKET</a>
+            <div style="margin-top: auto; font-size: 0.6rem; opacity: 0.3;">SYSTEM STATUS: STABLE</div>
+        </aside>
+
+        <main class="panel hero-panel">
+            <h1 class="hero-h">KAPTAN<span>CRAFT</span></h1>
+        </main>
+
+        <section class="panel">
+            <div class="stat-card">
+                <span class="stat-label">SUNUCU SÜRÜMÜ</span>
+                <span class="stat-val">1.21.4</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">DUNYA TURU</span>
+                <span class="stat-val">SURVIVAL</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">LOKASYON</span>
+                <span class="stat-val">TURKIYE</span>
+            </div>
         </section>
 
-        <section class="control-panel">
-            <div class="status-tag">SYSTEM ONLINE • VER 1.21.4</div>
-            
-            <div class="ip-card" onclick="copy()">
-                <span style="font-size: 0.6rem; opacity: 0.5; font-weight: 800; display: block; margin-bottom: 8px;">NETWORK ADDRESS</span>
-                <span id="ip" style="font-size: 1.3rem; font-weight: 700;">KaptanCraftt.aternos.me</span>
+        <footer class="panel bottom-bar">
+            <div style="display: flex; gap: 20px;">
+                <div><span style="opacity: 0.5; font-size: 0.7rem; display: block;">USER ID</span><span style="font-weight: 700;">GUEST_1337</span></div>
+                <div><span style="opacity: 0.5; font-size: 0.7rem; display: block;">PING</span><span style="font-weight: 700; color: var(--l-color);">24MS</span></div>
             </div>
 
-            <div class="btn-stack">
-                <a href="https://kick.com/esentokat60" target="_blank" class="act-btn k-btn">KICK CANLI YAYIN</a>
-                <a href="#" class="act-btn d-btn">DISCORD</a>
-                <a href="#" class="act-btn d-btn" style="opacity: 0.5;">WIKI & MARKET</a>
+            <div class="ip-bar" onclick="copy()">
+                <span id="ip">KaptanCraftt.aternos.me</span>
+                <i class="fas fa-copy" style="font-size: 0.8rem; opacity: 0.5;"></i>
             </div>
-        </section>
-    </main>
+        </footer>
+    </div>
 
     <script>
-        // Intro & Reveal
+        // Entry Sequence
         window.onload = () => {
             setTimeout(() => {
-                document.getElementById('intro').style.display = 'none';
-                document.getElementById('ui').style.opacity = '1';
+                document.getElementById('entry-layer').style.transform = 'translateY(-100%)';
+                document.getElementById('app').style.opacity = '1';
             }, 2500);
         };
 
         // Custom Cursor
-        const dot = document.getElementById('c-dot');
-        const ring = document.getElementById('c-ring');
-        document.addEventListener('mousemove', (e) => {
-            dot.style.left = e.clientX + 'px';
-            dot.style.top = e.clientY + 'px';
-            ring.style.left = (e.clientX - 17) + 'px';
-            ring.style.top = (e.clientY - 17) + 'px';
+        const c = document.getElementById('c');
+        const cr = document.getElementById('c-r');
+        document.addEventListener('mousemove', e => {
+            c.style.left = e.clientX + 'px';
+            c.style.top = e.clientY + 'px';
+            cr.style.left = e.clientX - 15 + 'px';
+            cr.style.top = e.clientY - 15 + 'px';
         });
 
-        // Copy Engine
+        // Copy
         function copy() {
-            const t = "KaptanCraftt.aternos.me";
-            navigator.clipboard.writeText(t);
+            const ip = "KaptanCraftt.aternos.me";
+            navigator.clipboard.writeText(ip);
             const el = document.getElementById('ip');
-            el.innerText = "COPIED!";
-            el.style.color = "#53fc18";
-            setTimeout(() => { el.innerText = t; el.style.color = "#000"; }, 1500);
+            el.innerText = "IP KOPYALANDI!";
+            el.parentElement.style.background = "#53fc18";
+            setTimeout(() => {
+                el.innerText = ip;
+                el.parentElement.style.background = "#fff";
+            }, 2000);
         }
     </script>
 </body>
